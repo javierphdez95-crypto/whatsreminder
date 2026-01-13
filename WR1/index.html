@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Recordatorios por WhatsApp · 1€/mes</title>
+  <meta name="description" content="Programa recordatorios y recíbelos por WhatsApp. 1€/mes. Hasta 30 recordatorios al mes. Planifica todo el año." />
+  <style>
+    :root{
+      --bg:#ffffff; --text:#111; --muted:#555; --border:#e9e9e9; --card:#fafafa;
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+    a{color:inherit}
+    .wrap{max-width:980px;margin:0 auto;padding:22px}
+    header{position:sticky;top:0;background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);z-index:10}
+    .nav{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:14px 22px;max-width:980px;margin:0 auto}
+    .brand{font-weight:900;letter-spacing:-.2px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{border:1px solid var(--border);background:#fff;padding:8px 12px;border-radius:999px;cursor:pointer;font-weight:700}
+    .tab.active{border-color:#111}
+    .hero{padding:42px 0 18px}
+    .badge{display:inline-block;border:1px solid var(--border);padding:6px 10px;border-radius:999px;color:var(--muted);font-size:13px}
+    h1{font-size:44px;line-height:1.05;margin:12px 0 10px}
+    p{font-size:18px;line-height:1.5;color:#222}
+    .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .btn{display:inline-block;padding:12px 16px;border-radius:14px;font-weight:900;text-decoration:none;border:1px solid var(--border);background:#fff;cursor:pointer}
+    .btn.primary{background:#111;color:#fff;border-color:#111}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin:22px 0}
+    .card{grid-column:span 6;border:1px solid var(--border);border-radius:var(--radius);background:var(--card);padding:16px}
+    .card.full{grid-column:span 12}
+    .kpis{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .kpi{border:1px solid var(--border);border-radius:14px;padding:10px 12px;background:#fff}
+    .small{font-size:13px;color:var(--muted)}
+    .section{padding:10px 0 22px}
+    .hr{height:1px;background:var(--border);margin:18px 0}
+    label{display:block;font-weight:800;margin:10px 0 6px}
+    input, textarea, select{
+      width:100%;padding:12px 12px;border:1px solid var(--border);
+      border-radius:14px;font-size:16px;background:#fff;
+    }
+    textarea{min-height:90px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:820px){
+      h1{font-size:34px}
+      .card{grid-column:span 12}
+      .row{grid-template-columns:1fr}
+    }
+    .notice{border:1px solid var(--border);border-radius:14px;padding:12px;background:#fff}
+    .list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .item{border:1px solid var(--border);border-radius:14px;padding:12px;background:#fff}
+    .item-top{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}
+    .pill{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:4px 10px;font-size:12px;color:var(--muted)}
+    .danger{color:#b00020}
+    .footer{padding:18px 0;color:var(--muted);font-size:13px}
+    .hide{display:none !important}
+  </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+<header>
+  <div class="nav">
+    <div class="brand">WhatsReminder</div>
+    <div class="tabs">
+      <button class="tab active" onclick="show('home')">Inicio</button>
+<button class="tab" onclick="show('app')">Programar</button>
+<button class="tab" onclick="show('help')">Ayuda</button>
+
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- HOME -->
+  <section id="view-home">
+    <div class="hero">
+      <span class="badge">100% online · Funciona en móvil · Te avisa por WhatsApp</span>
+      <h1>Recordatorios por WhatsApp, sin complicaciones</h1>
+      <p class="subtitle">
+  Escríbelo una vez y te llegará justo cuando lo necesites.
+</p>
+<ul class="features">
+  <li>✅ Sin registro</li>
+  <li>✅ Sin contraseñas</li>
+  <li>✅ Empieza en menos de 10 segundos</li>
+</ul>
+
+
+
+      <div class="kpis">
+        <div class="kpi"><strong>1€ / mes</strong><div class="small">cancela cuando quieras</div></div>
+        <div class="kpi"><strong>Hasta 30 / mes</strong><div class="small">límite para evitar abuso</div></div>
+        <div class="kpi"><strong>Todo el año</strong><div class="small">programa con antelación</div></div>
+      </div>
+
+      <div class="cta">
+  <a class="btn primary" href="https://buy.stripe.com/test_6oU6oG0JA2037LO4225kk01" target="_blank" rel="noopener">
+    Suscribirme por 1€/mes
+  </a>
+  <button class="btn" id="btn-try">Probar demo (sin enviar WhatsApp)</button>
+</div>
+
+
+      <p class="small" style="margin-top:10px">
+        *En esta demo puedes crear recordatorios y guardarlos. Para enviar WhatsApp reales necesitas conectar WhatsApp Business API.
+      </p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>¿Para qué sirve?</h3>
+        <p class="small">
+          Para pagos, citas, medicación, estudiar, tareas, cumpleaños, llamadas pendientes… cualquier cosa que no quieres olvidar.
+        </p>
+      </div>
+      <div class="card">
+        <h3>¿Por qué WhatsApp?</h3>
+        <p class="small">
+          Porque WhatsApp se mira siempre. Un WhatsApp suele tener más atención que una notificación normal del móvil.
+        </p>
+      </div>
+
+      <div class="card full">
+        <h3>Ejemplo</h3>
+        <div class="notice">
+          <div class="pill">Recordatorio</div>
+          <p style="margin:10px 0 0">
+            “Recuérdame pagar el alquiler hoy a las 09:00”
+          </p>
+          <p class="small" style="margin:8px 0 0">
+            A la hora exacta recibirás un WhatsApp con ese texto.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="hr"></div>
+
+    <div class="section">
+      <h2>Preguntas rápidas</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>¿Puedo programar todo el año?</h3>
+          <p class="small">Sí. Puedes crear recordatorios para cualquier fecha futura.</p>
+        </div>
+        <div class="card">
+          <h3>¿Qué pasa si supero 30 al mes?</h3>
+          <p class="small">El sistema bloquea el exceso y te avisa. Así evitamos spam y costes inesperados.</p>
+        </div>
+        <div class="card">
+          <h3>¿Da consejos médicos/legales?</h3>
+          <p class="small">No. Solo envía recordatorios. Nada de asesoramiento.</p>
+        </div>
+        <div class="card">
+          <h3>¿Funciona en móvil como una app?</h3>
+          <p class="small">Sí, puedes añadirla a la pantalla de inicio (PWA). En la sección Ayuda te explico.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div><strong>Aviso:</strong> Herramienta para programar recordatorios. No sustituye asesoramiento profesional.</div>
+      <div style="margin-top:6px">Contacto: tuemail@tudominio.com</div>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <section id="view-app" class="hide">
+    <h2>Programar recordatorios</h2>
+    <p class="small">En producción, aquí se guardan en tu cuenta y se envían por WhatsApp automáticamente.</p>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Tu WhatsApp</h3>
+        <label for="phone">Número (con prefijo país)</label>
+        <input id="phone" placeholder="+34 600 123 123" />
+
+        <label for="tz">Zona horaria</label>
+        <select id="tz">
+          <option value="Europe/Madrid">Europe/Madrid</option>
+          <option value="UTC">UTC</option>
+          <option value="America/Mexico_City">America/Mexico_City</option>
+          <option value="America/Argentina/Buenos_Aires">America/Argentina/Buenos_Aires</option>
+          <option value="America/Bogota">America/Bogota</option>
+          <option value="America/Santiago">America/Santiago</option>
+          <option value="America/New_York">America/New_York</option>
+        </select>
+
+        <div class="notice" style="margin-top:12px">
+          <div class="small">
+            Importante: el usuario debe dar permiso para recibir mensajes por WhatsApp (opt-in).
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Nuevo recordatorio</h3>
+
+        <label for="msg">Mensaje</label>
+        <textarea id="msg" placeholder="Ej: Recuérdame llamar al médico"></textarea>
+
+        <div class="row">
+          <div>
+            <label for="date">Fecha</label>
+            <input id="date" type="date" />
+          </div>
+          <div>
+            <label for="time">Hora</label>
+            <input id="time" type="time" />
+          </div>
+        </div>
+
+        <label for="repeat">Repetición (opcional)</label>
+        <select id="repeat">
+          <option value="none">No se repite</option>
+          <option value="daily">Diario</option>
+          <option value="weekly">Semanal</option>
+          <option value="monthly">Mensual</option>
+          <option value="yearly">Anual</option>
+        </select>
+
+        <label style="margin-top:12px">
+          <input type="checkbox" id="optin" />
+          Acepto recibir recordatorios por WhatsApp en este número
+        </label>
+
+        <div class="cta" style="margin-top:12px">
+          <button class="btn primary" id="btn-add">Guardar recordatorio</button>
+          <button class="btn" id="btn-clear">Borrar todo (demo)</button>
+        </div>
+
+        <div id="status" class="small" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card full">
+        <div class="item-top">
+          <h3 style="margin:0">Mis recordatorios</h3>
+          <div class="pill" id="quota">0 / 30 este mes</div>
+        </div>
+
+        <div class="list" id="list"></div>
+
+        <div class="hr"></div>
+
+        <div class="notice">
+          <strong>Nota:</strong> en una versión real, al “Guardar recordatorio” se llama a tu servidor:
+          <div class="small" style="margin-top:6px">
+            <code>POST /api/reminders</code> (guardar en BD) → un “planificador” envía WhatsApp a la hora indicada.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="reminders-list"></div>
+  </section>
+
+  <!-- HELP -->
+  <section id="view-help" class="hide">
+    <h2>Ayuda</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>¿Esto puede ser web y app?</h3>
+        <p class="small">
+          Sí. Puedes usar una web que se añade a la pantalla de inicio del móvil (PWA).
+          En iPhone: Compartir → “Añadir a pantalla de inicio”.
+          En Android: Menú del navegador → “Añadir a pantalla de inicio”.
+        </p>
+      </div>
+      <div class="card">
+        <h3>¿Qué falta para que envíe WhatsApps reales?</h3>
+        <p class="small">
+          Conectar WhatsApp Business API (o un proveedor oficial) + Stripe para suscripción.
+          Esta página ya está preparada para integrarlo.
+        </p>
+      </div>
+      <div class="card full">
+        <h3>Reglas recomendadas del plan (1€/mes)</h3>
+        <ul class="small">
+          <li>Hasta <strong>30 recordatorios/mes</strong> por usuario.</li>
+          <li>El usuario puede programar todo el año; el límite se aplica al <strong>mes de envío</strong>.</li>
+          <li>Confirmación de número: “envía ALTA a nuestro WhatsApp” (opcional, pero útil).</li>
+          <li>Un enlace “Cancelar suscripción” dentro de la cuenta.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// === Supabase config ===
+const SUPABASE_URL = "https://xmddjfvvobqktcblgjre.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhtZGRqZnZ2b2Jxa3RjYmxnanJlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MjYxNjYsImV4cCI6MjA4MzIwMjE2Nn0.oMXmukOwscKZkLQXZIsGeYTIjlOjk-kgZgi3rXHtbCI";
+
+// Crear cliente Supabase (único)
+const sb = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+
+// Obtener token desde la URL
+function getTokenFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('token');
+}
+function getTokenOrNull() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("token");
+}
+
+async function listReminders() {
+  const token = getTokenOrNull();
+  if (!token) return [];
+
+  const { data, error } = await sb
+    .from("reminders")
+    .select("id, phone, message, send_at, repeat, created_at")
+    .eq("token", token)
+    .order("send_at", { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+async function createReminder({ phone, message, sendAt, repeat }) {
+  const token = getTokenFromUrl();
+  if (!token) throw new Error("No token");
+
+  const { data, error } = await sb
+    .from("reminders")
+    .insert([{
+      token,
+      phone,
+      message,
+      send_at: sendAt,
+      repeat
+    }])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+async function deleteReminder(id) {
+  const token = getTokenFromUrl();
+  if (!token) throw new Error("No token");
+
+  const { error } = await sb
+    .from("reminders")
+    .delete()
+    .eq("id", id)
+    .eq("token", token);
+
+  if (error) throw error;
+}
+
+function monthKeyFromISO(iso) {
+  return String(iso).slice(0, 7); // "YYYY-MM"
+}
+
+function nextMonthStartISO(yyyyMm) {
+  const [y, m] = yyyyMm.split("-").map(Number);
+  // yyyyMm=2026-01 -> m=1 -> Date.UTC(2026,1,1)=Feb 1
+  return new Date(Date.UTC(y, m, 1, 0, 0, 0)).toISOString();
+}
+
+async function countRemindersForMonth(token, yyyyMm) {
+  const start = `${yyyyMm}-01T00:00:00.000Z`;
+  const end = nextMonthStartISO(yyyyMm);
+
+  const { count, error } = await sb
+    .from("reminders")
+    .select("id", { count: "exact", head: true })
+    .eq("token", token)
+    .gte("send_at", start)
+    .lt("send_at", end);
+
+  if (error) throw error;
+  return count || 0;
+}
+
+
+
+function renderReminders(reminders) {
+  const el = document.getElementById("list");
+  if (!el) return;
+
+  if (!reminders.length) {
+    el.innerHTML = "<div class='small' style='opacity:.8'>No tienes recordatorios guardados todavía.</div>";
+    return;
+  }
+
+  el.innerHTML = reminders.map(r => {
+    const when = new Date(r.send_at).toLocaleString();
+    const safeMsg = (r.message || "").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    const safePhone = (r.phone || "").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+
+    return `
+      <div class="item">
+        <div class="item-top">
+          <div><strong>📅 ${when}</strong> <span class="small" style="opacity:.7">(${r.repeat || "none"})</span></div>
+          <button class="btn" data-del="${r.id}" style="padding:6px 10px">Eliminar</button>
+        </div>
+        <div class="small" style="margin-top:6px"><b>📱</b> ${safePhone}</div>
+        <div style="margin-top:6px">${safeMsg}</div>
+      </div>
+    `;
+  }).join("");
+
+  el.querySelectorAll("[data-del]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-del");
+      if (!id) return;
+
+      if (!confirm("¿Eliminar este recordatorio?")) return;
+
+      try {
+        await deleteReminder(id);
+        await refreshRemindersUI();
+      } catch (e) {
+        console.error(e);
+        alert("No se pudo eliminar (mira consola).");
+      }
+    });
+  });
+}
+
+
+
+async function refreshRemindersUI() {
+  const quotaEl = document.getElementById("quota");
+  try {
+    const reminders = await listReminders();
+    renderReminders(reminders);
+
+    const LIMIT = 30;
+    const yyyyMm = new Date().toISOString().slice(0, 7);
+
+    const usedThisMonth = reminders.filter(r => {
+      const m = new Date(r.send_at).toISOString().slice(0, 7);
+      return m === yyyyMm;
+    }).length;
+
+    if (quotaEl) quotaEl.textContent = `${usedThisMonth} / ${LIMIT} este mes`;
+  } catch (e) {
+    console.error(e);
+    const el = document.getElementById("list");
+    if (el) el.innerHTML = "<div class='small' style='color:#ffb3b3'>Error cargando recordatorios (mira consola).</div>";
+    if (quotaEl) quotaEl.textContent = `— / 30 este mes`;
+  }
+}
+
+
+
+
+// Validar token contra Supabase
+async function validateToken(token) {
+  if (!token) return false;
+
+  const { data, error } = await sb
+    .from('access_tokens')
+    .select('id')
+    .eq('token', token)
+    .eq('active', true)
+    .maybeSingle();
+
+  if (error) {
+    console.error("validateToken error:", error);
+    return false;
+  }
+
+  return !!data;
+}
+
+
+
+  // --------- Navegación simple ----------
+  const views = {
+    home: document.getElementById('view-home'),
+    app: document.getElementById('view-app'),
+    help: document.getElementById('view-help')
+  };
+  const tabs = Array.from(document.querySelectorAll('.tab'));
+  function show(view){
+  const map = {
+    home: 'view-home',
+    app:  'view-app',
+    help: 'view-help'
+  };
+
+  if (!map[view]) {
+    console.warn("show(): vista inválida:", view);
+    return;
+  }
+
+  // Oculta todas
+  Object.values(map).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('hide');
+  });
+
+  // Muestra la solicitada
+  const target = document.getElementById(map[view]);
+  if (target) target.classList.remove('hide');
+
+  // Control de acceso SIEMPRE al entrar en app
+  if (view === 'app') {
+    checkAccessAndShow();
+  }
+}
+window.show = show;
+
+
+
+
+async function guardAppAccess(){
+  const token = getTokenFromUrl();
+  const valid = await validateToken(token);
+
+  if (!valid) {
+    alert('Acceso restringido. Revisa tu enlace de acceso.');
+    show('home');
+  }
+}
+
+
+async function checkAccessAndShow(){
+  const token = getTokenFromUrl();
+  const valid = await validateToken(token);
+
+  if (!valid) {
+    alert('Acceso restringido. Revisa tu enlace de acceso.');
+    show('home');
+    return;
+  }
+
+  // Token válido → cargamos los recordatorios
+  refreshRemindersUI();
+}
+
+
+
+
+
+  // --------- Demo "suscripción" ----------
+  const btnSubscribe = document.getElementById('btn-subscribe');
+  const btnTry = document.getElementById('btn-try');
+  const btnAdd = document.getElementById("btn-add");
+const btnClear = document.getElementById("btn-clear");
+
+function setStatus(msg, isError=false) {
+  const el = document.getElementById("status");
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = isError ? "#ffb3b3" : "";
+}
+
+function makeSendAtISO(dateStr, timeStr) {
+  if (!dateStr || !timeStr) return null;
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const [hh, mm] = timeStr.split(":").map(Number);
+  const local = new Date(y, m - 1, d, hh, mm, 0, 0);
+  return isNaN(local.getTime()) ? null : local.toISOString();
+}
+
+btnAdd?.addEventListener("click", async (e) => {
+  e.preventDefault();
+  setStatus("");
+
+  try {
+    const phone = (document.getElementById("phone")?.value || "").trim();
+    const message = (document.getElementById("msg")?.value || "").trim();
+    const dateStr = (document.getElementById("date")?.value || "").trim();
+    const timeStr = (document.getElementById("time")?.value || "").trim();
+    const repeat = (document.getElementById("repeat")?.value || "none").trim();
+    const optin = !!document.getElementById("optin")?.checked;
+
+    if (!optin) return setStatus("Debes aceptar el opt-in para recibir WhatsApp.", true);
+    if (!phone) return setStatus("Escribe un número de WhatsApp (con prefijo, ej: +34...).", true);
+    if (!message) return setStatus("Escribe el mensaje del recordatorio.", true);
+
+    const sendAt = makeSendAtISO(dateStr, timeStr);
+    if (!sendAt) return setStatus("Elige fecha y hora válidas.", true);
+    if (new Date(sendAt).getTime() < Date.now() + 30_000) {
+      return setStatus("Pon una fecha/hora al menos 30 segundos en el futuro.", true);
+    }
+
+    const token = getTokenFromUrl();
+const yyyyMm = monthKeyFromISO(sendAt);
+const LIMIT = 30;
+
+setStatus("Comprobando límite…");
+const used = await countRemindersForMonth(token, yyyyMm);
+
+if (used >= LIMIT) {
+  setStatus(`Has alcanzado el límite de ${LIMIT} recordatorios para ${yyyyMm}. Elige otra fecha o borra alguno.`, true);
+  return;
+}
+
+setStatus("Guardando…");
+await createReminder({ phone, message, sendAt, repeat });
+setStatus("Guardado ✅");
+
+
+    await refreshRemindersUI();
+  } catch (err) {
+    console.error(err);
+    setStatus("Error guardando (mira consola).", true);
+  }
+});
+
+btnClear?.addEventListener("click", (e) => {
+  e.preventDefault();
+  document.getElementById("msg").value = "";
+  document.getElementById("date").value = "";
+  document.getElementById("time").value = "";
+  document.getElementById("repeat").value = "none";
+  document.getElementById("optin").checked = false;
+  setStatus("Formulario limpiado.");
+});
+
+
+  function setSubscribed(val){
+    localStorage.setItem('wr_subscribed', val ? '1' : '0');
+  }
+  function isSubscribed(){
+    return localStorage.getItem('wr_subscribed') === '1';
+  }
+
+  
+  btnTry.addEventListener('click', () => {
+    show('app');
+  });
+
+
+
+  // Si alguien entra directo a "Programar", mostrar aviso si no está suscrito (demo)
+  function subscriptionNudge(){
+    if(!isSubscribed()){
+      // No bloqueamos en demo, solo avisamos.
+      const s = document.getElementById('status');
+      if(s) s.innerHTML = '<span class="small">Demo: sin pago. En producción, esta sección se desbloquea tras suscribirse (Stripe).</span>';
+    }
+  }
+
+  render();
+  subscriptionNudge();
+</script>
+</body>
+</html>
