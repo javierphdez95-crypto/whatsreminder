@@ -559,11 +559,14 @@ function setStatus(msg, isError=false) {
 
 function makeSendAtISO(dateStr, timeStr) {
   if (!dateStr || !timeStr) return null;
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const [hh, mm] = timeStr.split(":").map(Number);
-  const local = new Date(y, m - 1, d, hh, mm, 0, 0);
-  return isNaN(local.getTime()) ? null : local.toISOString();
+
+  // Interpretar fecha y hora como hora local del usuario
+  const local = new Date(`${dateStr}T${timeStr}:00`);
+
+  // Convertirla a UTC (lo que necesita Supabase + Worker)
+  return local.toISOString();
 }
+
 
 btnAdd?.addEventListener("click", async (e) => {
   e.preventDefault();
