@@ -573,7 +573,10 @@ btnAdd?.addEventListener("click", async (e) => {
   setStatus("");
 
   try {
-    const phone = (document.getElementById("phone")?.value || "").trim();
+    const phone = (document.getElementById("phone")?.value || "")
+  .replace(/\s+/g, "")
+  .trim();
+
     const message = (document.getElementById("msg")?.value || "").trim();
     const dateStr = (document.getElementById("date")?.value || "").trim();
     const timeStr = (document.getElementById("time")?.value || "").trim();
