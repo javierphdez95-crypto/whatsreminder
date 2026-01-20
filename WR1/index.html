@@ -335,7 +335,10 @@ async function createReminder({ phone, message, sendAt, repeat }) {
       phone,
       message,
       send_at: sendAt,
-      repeat
+      next_send_at: sendAt,   // 👈 MUY IMPORTANTE
+      repeat,
+      repeat_interval: 1,     // 👈 para repeticiones
+      sent: false
     }])
     .select()
     .single();
@@ -343,6 +346,7 @@ async function createReminder({ phone, message, sendAt, repeat }) {
   if (error) throw error;
   return data;
 }
+
 async function deleteReminder(id) {
   const token = getTokenFromUrl();
   if (!token) throw new Error("No token");
