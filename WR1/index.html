@@ -402,16 +402,34 @@
       const tz = document.getElementById("tz")?.value || "Europe/Madrid";
 
       let sendAt = (r.send_at || "").trim();
-      if (sendAt && !sendAt.endsWith("Z") && !sendAt.includes("+")) sendAt = sendAt + "Z";
 
-      const when = new Date(sendAt).toLocaleString("es-ES", {
-        timeZone: tz,
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+// Si no hay fecha, lo mostramos como "sin fecha" en vez de romper el render
+if (!sendAt) {
+  return `
+    <div class="item">
+      <div class="item-top">
+        <div><strong>⚠️ Sin fecha</strong> <span class="small" style="opacity:.7">(${r.repeat || "none"})</span></div>
+        <button class="btn" data-del="${r.id}" style="padding:6px 10px">Eliminar</button>
+      </div>
+      <div class="small" style="margin-top:6px"><b>📱</b> ${safePhone}</div>
+      <div style="margin-top:6px">${safeMsg}</div>
+    </div>
+  `;
+}
+
+if (!sendAt.endsWith("Z") && !sendAt.includes("+")) {
+  sendAt = sendAt + "Z";
+}
+
+const when = new Date(sendAt).toLocaleString("es-ES", {
+  timeZone: tz,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
 
       const safeMsg = (r.message || "").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
       const safePhone = (r.phone || "").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
