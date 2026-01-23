@@ -390,18 +390,68 @@
   }
 
   function renderReminders(reminders) {
-    const el = document.getElementById("list");
-    if (!el) return;
+  const el = document.getElementById("list");
+  if (!el) return;
 
-    if (!reminders.length) {
-      el.innerHTML = "<div class='small' style='opacity:.8'>No tienes recordatorios guardados todavía.</div>";
-      return;
+  if (!Array.isArray(reminders) || reminders.length === 0) {
+    el.innerHTML = "<div class='small' style='opacity:.8'>No tienes recordatorios guardados todavía.</div>";
+    return;
+  }
+
+  el.innerHTML = reminders.map(r => {
+    const tz = document.getElementById("tz")?.value || "Europe/Madrid";
+
+    // Sanitizar primero (evita errores y XSS)
+    const safeMsg = (r.message || "").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    const safePhone = (r.phone || "").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+
+    // Normalizar send_at
+    let sendAt = (r.send_at || "").trim();
+    if (sendAt && !sendAt.endsWith("Z") && !sendAt.includes("+")) {
+      sendAt = sendAt + "Z";
     }
 
-    el.innerHTML = reminders.map(r => {
-      const tz = document.getElementById("tz")?.value || "Europe/Madrid";
+    const when = sendAt
+      ? new Date(sendAt).toLocaleString("es-ES", {
+          timeZone: tz,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "—";
 
-      let sendAt = (r.send_at || "").trim();
+    return `
+      <div class="item">
+        <div class="item-top">
+          <div><strong>📅 ${when}</strong> <span class="small" style="opacity:.7">(${r.repeat || "none"})</span></div>
+          <button class="btn" data-del="${r.id}" style="padding:6px 10px">Eliminar</button>
+        </div>
+        <div class="small" style="margin-top:6px"><b>📱</b> ${safePhone}</div>
+        <div style="margin-top:6px">${safeMsg}</div>
+      </div>
+    `;
+  }).join("");
+
+  el.querySelectorAll("[data-del]").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-del");
+      if (!id) return;
+
+      if (!confirm("¿Eliminar este recordatorio?")) return;
+
+      try {
+        await deleteReminder(id);
+        await refreshRemindersUI();
+      } catch (e) {
+        console.error(e);
+        alert("No se pudo eliminar (mira consola).");
+      }
+    });
+  });
+}
+
 
 // Si no hay fecha, lo mostramos como "sin fecha" en vez de romper el render
 if (!sendAt) {
