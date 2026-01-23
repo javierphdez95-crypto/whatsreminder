@@ -80,9 +80,7 @@
     <div class="hero">
       <span class="badge">100% online · Funciona en móvil · Te avisa por WhatsApp</span>
       <h1>Recordatorios por WhatsApp, sin complicaciones</h1>
-      <p class="subtitle">
-        Escríbelo una vez y te llegará justo cuando lo necesites.
-      </p>
+      <p class="subtitle">Escríbelo una vez y te llegará justo cuando lo necesites.</p>
 
       <div class="kpis">
         <div class="kpi"><strong>Sin registro</strong><div class="small">acceso por enlace (token)</div></div>
@@ -122,12 +120,8 @@
         <h3>Ejemplo</h3>
         <div class="notice">
           <div class="pill">Recordatorio</div>
-          <p style="margin:10px 0 0">
-            “Recuérdame pagar el alquiler hoy a las 09:00”
-          </p>
-          <p class="small" style="margin:8px 0 0">
-            A la hora exacta recibirás un WhatsApp con ese texto.
-          </p>
+          <p style="margin:10px 0 0">“Recuérdame pagar el alquiler hoy a las 09:00”</p>
+          <p class="small" style="margin:8px 0 0">A la hora exacta recibirás un WhatsApp con ese texto.</p>
         </div>
       </div>
     </div>
@@ -144,12 +138,11 @@
 
     <div class="notice" id="token-warning" style="margin-top:10px">
       <strong>Falta el token</strong>.
-      <div class="small" style="margin-top:6px">
-        Abre esta página con <code>?token=TU_TOKEN</code>.
-      </div>
+      <div class="small" style="margin-top:6px">Abre esta página con <code>?token=TU_TOKEN</code>.</div>
     </div>
 
-    <div class="grid" id="app-grid" class="hide">
+    <!-- OJO: clase bien puesta -->
+    <div class="grid hide" id="app-grid">
 
       <!-- Créditos -->
       <div class="card">
@@ -196,9 +189,7 @@
         </select>
 
         <div class="notice" style="margin-top:12px">
-          <div class="small">
-            Importante: el usuario debe dar permiso para recibir mensajes por WhatsApp (opt-in).
-          </div>
+          <div class="small">Importante: el usuario debe dar permiso para recibir mensajes por WhatsApp (opt-in).</div>
         </div>
       </div>
 
@@ -389,100 +380,37 @@
     return count || 0;
   }
 
+  // ✅ Render limpio (sin duplicados, sin returns fuera)
   function renderReminders(reminders) {
-  const el = document.getElementById("list");
-  if (!el) return;
+    const el = document.getElementById("list");
+    if (!el) return;
 
-  if (!Array.isArray(reminders) || reminders.length === 0) {
-    el.innerHTML = "<div class='small' style='opacity:.8'>No tienes recordatorios guardados todavía.</div>";
-    return;
-  }
-
-  el.innerHTML = reminders.map(r => {
-    const tz = document.getElementById("tz")?.value || "Europe/Madrid";
-
-    // Sanitizar primero (evita errores y XSS)
-    const safeMsg = (r.message || "").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-    const safePhone = (r.phone || "").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-
-    // Normalizar send_at
-    let sendAt = (r.send_at || "").trim();
-    if (sendAt && !sendAt.endsWith("Z") && !sendAt.includes("+")) {
-      sendAt = sendAt + "Z";
+    if (!Array.isArray(reminders) || reminders.length === 0) {
+      el.innerHTML = "<div class='small' style='opacity:.8'>No tienes recordatorios guardados todavía.</div>";
+      return;
     }
 
-    const when = sendAt
-      ? new Date(sendAt).toLocaleString("es-ES", {
-          timeZone: tz,
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-        })
-      : "—";
-
-    return `
-      <div class="item">
-        <div class="item-top">
-          <div><strong>📅 ${when}</strong> <span class="small" style="opacity:.7">(${r.repeat || "none"})</span></div>
-          <button class="btn" data-del="${r.id}" style="padding:6px 10px">Eliminar</button>
-        </div>
-        <div class="small" style="margin-top:6px"><b>📱</b> ${safePhone}</div>
-        <div style="margin-top:6px">${safeMsg}</div>
-      </div>
-    `;
-  }).join("");
-
-  el.querySelectorAll("[data-del]").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      const id = btn.getAttribute("data-del");
-      if (!id) return;
-
-      if (!confirm("¿Eliminar este recordatorio?")) return;
-
-      try {
-        await deleteReminder(id);
-        await refreshRemindersUI();
-      } catch (e) {
-        console.error(e);
-        alert("No se pudo eliminar (mira consola).");
-      }
-    });
-  });
-}
-
-
-// Si no hay fecha, lo mostramos como "sin fecha" en vez de romper el render
-if (!sendAt) {
-  return `
-    <div class="item">
-      <div class="item-top">
-        <div><strong>⚠️ Sin fecha</strong> <span class="small" style="opacity:.7">(${r.repeat || "none"})</span></div>
-        <button class="btn" data-del="${r.id}" style="padding:6px 10px">Eliminar</button>
-      </div>
-      <div class="small" style="margin-top:6px"><b>📱</b> ${safePhone}</div>
-      <div style="margin-top:6px">${safeMsg}</div>
-    </div>
-  `;
-}
-
-if (!sendAt.endsWith("Z") && !sendAt.includes("+")) {
-  sendAt = sendAt + "Z";
-}
-
-const when = new Date(sendAt).toLocaleString("es-ES", {
-  timeZone: tz,
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-});
-
+    el.innerHTML = reminders.map(r => {
+      const tz = document.getElementById("tz")?.value || "Europe/Madrid";
 
       const safeMsg = (r.message || "").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
       const safePhone = (r.phone || "").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+
+      let sendAt = (r.send_at || "").trim();
+      if (sendAt && !sendAt.endsWith("Z") && !sendAt.includes("+")) {
+        sendAt = sendAt + "Z";
+      }
+
+      const when = sendAt
+        ? new Date(sendAt).toLocaleString("es-ES", {
+            timeZone: tz,
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : "⚠️ Sin fecha";
 
       return `
         <div class="item">
@@ -501,6 +429,7 @@ const when = new Date(sendAt).toLocaleString("es-ES", {
         const id = btn.getAttribute("data-del");
         if (!id) return;
         if (!confirm("¿Eliminar este recordatorio?")) return;
+
         try {
           await deleteReminder(id);
           await refreshRemindersUI();
@@ -521,6 +450,7 @@ const when = new Date(sendAt).toLocaleString("es-ES", {
     const yyyyMm = new Date().toISOString().slice(0, 7);
 
     const usedThisMonth = reminders.filter(r => {
+      if (!r.send_at) return false;
       const m = new Date(r.send_at).toISOString().slice(0, 7);
       return m === yyyyMm;
     }).length;
@@ -649,11 +579,9 @@ const when = new Date(sendAt).toLocaleString("es-ES", {
       return;
     }
 
-    // Token OK
     warn?.classList.add("hide");
     grid?.classList.remove("hide");
 
-    // Cargar UI
     await refreshCreditsUI();
     await refreshRemindersUI();
   }
@@ -676,12 +604,10 @@ const when = new Date(sendAt).toLocaleString("es-ES", {
   document.getElementById("btn-go-app")?.addEventListener("click", () => show("app"));
   document.getElementById("btn-buy-home")?.addEventListener("click", () => show("app"));
 
-  // Botones comprar
   document.querySelectorAll("[data-buy]").forEach(btn => {
     btn.addEventListener("click", () => startCheckout(Number(btn.getAttribute("data-buy"))));
   });
 
-  // Guardar recordatorio
   document.getElementById("btn-add")?.addEventListener("click", async (e) => {
     e.preventDefault();
     setStatus("");
@@ -720,7 +646,6 @@ const when = new Date(sendAt).toLocaleString("es-ES", {
       setStatus("Guardado ✅");
 
       await refreshRemindersUI();
-      // Opcional: refrescar créditos por si el worker descontó ya (depende de tu lógica)
       await refreshCreditsUI();
 
     } catch (err) {
@@ -748,10 +673,6 @@ const when = new Date(sendAt).toLocaleString("es-ES", {
         ? `Token detectado: <code>${token}</code>`
         : `Ejemplo: <code>${window.location.origin}${window.location.pathname}?token=test_token_1</code>`;
     }
-
-    // Si vuelves de Stripe, intenta refrescar créditos automáticamente
-    // (aunque caigas en home, no pasa nada)
-    refreshCreditsUI().catch(()=>{});
 
     // Arrancamos en home
     show("home");
