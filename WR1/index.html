@@ -231,7 +231,7 @@
 
         <label style="margin-top:12px">
           <input type="checkbox" id="optin" />
-          Acepto recibir recordatorios por WhatsApp en este número
+          Confirmo que este número es mío o tengo consentimiento del destinatario para recibir recordatorios por WhatsApp. Soy responsable del uso.
         </label>
 
         <div class="cta" style="margin-top:12px">
@@ -351,9 +351,9 @@
   if (!res.ok) {
     // Mensaje claro para usuario
     const msg =
-      data?.error === "No credits available"
-        ? "No tienes créditos. Compra un pack para seguir."
-        : (data?.error || "Error creando recordatorio");
+  data?.error === "No credits available"
+    ? "Para continuar, adquiere un pack de créditos."
+    : (data?.error || "No se pudo guardar el recordatorio.");
     throw new Error(msg);
   }
 
@@ -715,9 +715,6 @@ async function refreshCreditsUI(){
       throw new Error(data?.error || "No se pudo iniciar la prueba gratis");
     }
 
-    // Guardamos el token trial para reutilizarlo
-    try { localStorage.setItem("wr_trial_token", data.token); } catch {}
-
     window.location.href = data.url;
   } catch (e) {
     console.error(e);
@@ -767,10 +764,10 @@ async function refreshCreditsUI(){
       await refreshCreditsUI();
 
     } catch (err) {
-      console.error(err);
-      setStatus("Error guardando (mira consola).", true);
-    }
-  });
+    console.error(err);
+    setStatus(err?.message || "No se pudo guardar el recordatorio.", true);
+  }
+});
 
   document.getElementById("btn-clear")?.addEventListener("click", (e) => {
     e.preventDefault();
@@ -788,17 +785,7 @@ document.getElementById("time")?.addEventListener("change", updateUntilMessage);
 
   // ---- Init ----
   (function init(){
-    const urlToken = getTokenFromUrl();
-if (!urlToken) {
-  let saved = null;
-  try { saved = localStorage.getItem("wr_trial_token"); } catch {}
-  if (saved) {
-    window.location.href =
-      `${window.location.origin}${window.location.pathname}?token=${encodeURIComponent(saved)}`;
-    return;
-  }
-}
-
+  
     const token = getTokenFromUrl();
     const hint = document.getElementById("home-token-hint");
     if (hint) {
