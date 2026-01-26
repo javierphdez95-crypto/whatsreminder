@@ -95,6 +95,7 @@
       <div class="cta">
         <button class="btn primary" id="btn-go-app">Programar un recordatorio</button>
         <button class="btn" id="btn-buy-home">Comprar créditos</button>
+        <button class="btn" id="btn-trial">Probar gratis</button>
       </div>
 
       <div class="notice" style="margin-top:14px">
@@ -694,6 +695,29 @@ async function refreshCreditsUI(){
   document.querySelectorAll("[data-buy]").forEach(btn => {
     btn.addEventListener("click", () => startCheckout(Number(btn.getAttribute("data-buy"))));
   });
+  document.getElementById("btn-trial")?.addEventListener("click", async () => {
+  try {
+    const res = await fetch(`${API_BASE}/api/trial`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({})
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.url) {
+      throw new Error(data?.error || "No se pudo iniciar la prueba gratis");
+    }
+
+    // Guardamos el token trial para reutilizarlo
+    try { localStorage.setItem("wr_trial_token", data.token); } catch {}
+
+    window.location.href = data.url;
+  } catch (e) {
+    console.error(e);
+    alert("No se pudo iniciar la prueba gratis. Intenta de nuevo.");
+  }
+});
+
 
   document.getElementById("btn-add")?.addEventListener("click", async (e) => {
     e.preventDefault();
@@ -757,6 +781,17 @@ document.getElementById("time")?.addEventListener("change", updateUntilMessage);
 
   // ---- Init ----
   (function init(){
+    const urlToken = getTokenFromUrl();
+if (!urlToken) {
+  let saved = null;
+  try { saved = localStorage.getItem("wr_trial_token"); } catch {}
+  if (saved) {
+    window.location.href =
+      `${window.location.origin}${window.location.pathname}?token=${encodeURIComponent(saved)}`;
+    return;
+  }
+}
+
     const token = getTokenFromUrl();
     const hint = document.getElementById("home-token-hint");
     if (hint) {
