@@ -158,6 +158,8 @@
             <div style="text-align:right">
               <div class="pill" id="free-pill">—</div>
               <div class="small" style="margin-top:8px">1 crédito = 1 recordatorio enviado</div>
+              <div id="credits-reserved" class="small" style="opacity:.8;margin-top:4px"></div>
+
             </div>
           </div>
         </div>
@@ -219,6 +221,8 @@
           <option value="monthly">Mensual</option>
           <option value="yearly">Anual</option>
         </select>
+        <div id="credits-until" class="small" style="opacity:.8;margin-top:6px"></div>
+
 
         <label style="margin-top:12px">
           <input type="checkbox" id="optin" />
@@ -476,6 +480,15 @@
     return !!data;
   }
 
+  async function fetchBalance(token) {
+  const res = await fetch(`${API_BASE}/api/balance?token=${encodeURIComponent(token)}`, {
+    method: "GET",
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error || "Balance error");
+  return data;
+}
+
   async function fetchCredits(token) {
     const { data, error } = await sb
       .from("access_tokens")
@@ -495,39 +508,109 @@
     el.style.color = isError ? "#b00020" : "";
   }
 
-  async function refreshCreditsUI(){
-    const token = getTokenFromUrl();
-    const leftEl = document.getElementById("credits-left");
-    const metaEl = document.getElementById("credits-meta");
-    const freePill = document.getElementById("free-pill");
+  let lastBalance = null;
 
-    if (!token) {
-      if (leftEl) leftEl.textContent = "—";
-      if (metaEl) metaEl.textContent = "";
-      if (freePill) freePill.textContent = "Sin token";
-      return;
-    }
+function computeUntilDate({ credits_available, repeat, sendAtISO }) {
+  if (!sendAtISO || !credits_available || credits_available <= 0) return null;
 
-    try {
-      const row = await fetchCredits(token);
-      if (!row || row.active === false) {
-        if (freePill) freePill.textContent = "Token inválido";
-        return;
-      }
+  const start = new Date(sendAtISO);
+  if (Number.isNaN(start.getTime())) return null;
 
-      const total = Number(row.credits_total || 0);
-      const used = Number(row.credits_used || 0);
-      const freeUsed = !!row.free_used;
-      const remaining = Math.max(0, total - used);
+  const rep = String(repeat || "none").toLowerCase().trim();
+  let end = new Date(start.getTime());
 
-      if (leftEl) leftEl.textContent = String(remaining);
-      if (metaEl) metaEl.textContent = `Total: ${total} · Usados: ${used}`;
-      if (freePill) freePill.textContent = freeUsed ? "Gratis usado" : "1 recordatorio gratis disponible";
-    } catch (e) {
-      console.error(e);
-      setBuyStatus("No puedo leer créditos (¿permisos RLS?).", true);
-    }
+  const addDays = (d) => { end.setUTCDate(end.getUTCDate() + d); };
+  const addMonths = (m) => {
+    const y = end.getUTCFullYear();
+    const mo = end.getUTCMonth();
+    const day = end.getUTCDate();
+    const target = mo + m;
+    const ty = y + Math.floor(target / 12);
+    const tm = ((target % 12) + 12) % 12;
+    // día seguro en mes destino
+    const dim = new Date(Date.UTC(ty, tm + 1, 0)).getUTCDate();
+    end = new Date(Date.UTC(ty, tm, Math.min(day, dim), end.getUTCHours(), end.getUTCMinutes(), end.getUTCSeconds()));
+  };
+  const addYears = (yrs) => addMonths(yrs * 12);
+
+  // Si hay N créditos disponibles, te “da” para N envíos.
+  // Aproximación: último envío ~ start + (N-1) intervalos
+  const n = Math.max(1, Number(credits_available));
+  const steps = n - 1;
+
+  if (rep === "diario" || rep === "daily") addDays(steps);
+  else if (rep === "semanal" || rep === "weekly") addDays(steps * 7);
+  else if (rep === "mensual" || rep === "monthly") addMonths(steps);
+  else if (rep === "anual" || rep === "yearly" || rep === "annual") addYears(steps);
+  else return null;
+
+  // Formato Madrid
+  const formatted = new Intl.DateTimeFormat("es-ES", {
+    timeZone: "Europe/Madrid",
+    day: "2-digit", month: "2-digit", year: "numeric",
+  }).format(end);
+
+  return formatted;
+}
+
+function updateUntilMessage() {
+  const el = document.getElementById("credits-until");
+  if (!el) return;
+
+  const repeat = (document.getElementById("repeat")?.value || "none").trim();
+  const dateStr = (document.getElementById("date")?.value || "").trim();
+  const timeStr = (document.getElementById("time")?.value || "").trim();
+  const sendAt = makeSendAtISO(dateStr, timeStr);
+
+  if (!lastBalance) { el.textContent = ""; return; }
+
+  const avail = Number(lastBalance.credits_available || 0);
+  if (repeat === "none") { el.textContent = ""; return; }
+
+  if (avail <= 0) {
+    el.textContent = "No tienes créditos disponibles para recordatorios recurrentes.";
+    return;
   }
+
+  const until = computeUntilDate({ credits_available: avail, repeat, sendAtISO: sendAt });
+  if (!until) { el.textContent = ""; return; }
+
+  el.textContent = `Con tus créditos actuales, este recordatorio se enviará aprox. hasta el ${until}.`;
+}
+
+async function refreshCreditsUI(){
+  const token = getTokenFromUrl();
+  const leftEl = document.getElementById("credits-left");
+  const metaEl = document.getElementById("credits-meta");
+  const freePill = document.getElementById("free-pill");
+  const reservedEl = document.getElementById("credits-reserved");
+
+  if (!token) {
+    if (leftEl) leftEl.textContent = "—";
+    if (metaEl) metaEl.textContent = "";
+    if (freePill) freePill.textContent = "Sin token";
+    if (reservedEl) reservedEl.textContent = "";
+    lastBalance = null;
+    updateUntilMessage();
+    return;
+  }
+
+  try {
+    const b = await fetchBalance(token);
+    lastBalance = b;
+
+    if (leftEl) leftEl.textContent = String(b.credits_available ?? 0);
+    if (metaEl) metaEl.textContent = `Total: ${b.credits_total} · Usados: ${b.credits_used}`;
+    if (reservedEl) reservedEl.textContent = `Pendientes: ${b.credits_reserved ?? 0}`;
+    if (freePill) freePill.textContent = b.free_available ? "1 recordatorio gratis disponible" : "Gratis usado";
+
+    updateUntilMessage();
+  } catch (e) {
+    console.error(e);
+    setBuyStatus("No puedo leer balance.", true);
+  }
+}
+
 
   async function startCheckout(pack){
     const token = getTokenFromUrl();
@@ -663,6 +746,10 @@
     document.getElementById("optin").checked = false;
     setStatus("Formulario limpiado.");
   });
+  document.getElementById("repeat")?.addEventListener("change", updateUntilMessage);
+document.getElementById("date")?.addEventListener("change", updateUntilMessage);
+document.getElementById("time")?.addEventListener("change", updateUntilMessage);
+
 
   // ---- Init ----
   (function init(){
