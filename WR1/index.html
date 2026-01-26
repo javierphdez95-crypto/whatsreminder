@@ -330,29 +330,36 @@
     return data || [];
   }
 
-  async function createReminder({ phone, message, sendAt, repeat }) {
-    const token = getTokenFromUrl();
-    if (!token) throw new Error("No token");
+ async function createReminder({ phone, message, sendAt, repeat }) {
+  const token = getTokenFromUrl();
+  if (!token) throw new Error("No token");
 
-    const { data, error } = await sb
-      .from("reminders")
-      .insert([{
-        token,
-        phone,
-        message,
-        send_at: sendAt,
-        next_send_at: sendAt,
-        repeat,
-        repeat_interval: 1,
-        sent: false,
-        status: "pending"
-      }])
-      .select()
-      .single();
+  const res = await fetch(`${API_BASE}/api/create-reminder`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      token,
+      phone,
+      message,
+      send_at: sendAt,
+      repeat,
+      repeat_interval: 1
+    })
+  });
 
-    if (error) throw error;
-    return data;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    // Mensaje claro para usuario
+    const msg =
+      data?.error === "No credits available"
+        ? "No tienes créditos. Compra un pack para seguir."
+        : (data?.error || "Error creando recordatorio");
+    throw new Error(msg);
   }
+
+  return data.reminder;
+}
+
 
   async function deleteReminder(id) {
     const token = getTokenFromUrl();
