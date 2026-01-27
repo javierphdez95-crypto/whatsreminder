@@ -362,17 +362,19 @@
 
 
   async function deleteReminder(id) {
-    const token = getTokenFromUrl();
-    if (!token) throw new Error("No token");
+  const token = getTokenFromUrl();
+  if (!token) throw new Error("No token");
 
-    const { error } = await sb
-      .from("reminders")
-      .delete()
-      .eq("id", id)
-      .eq("token", token);
+  const res = await fetch(`${API_BASE}/api/cancel-reminder`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token, id }),
+  });
 
-    if (error) throw error;
-  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error || "No se pudo cancelar el recordatorio.");
+}
+
 
   function monthKeyFromISO(iso) { return String(iso).slice(0, 7); }
 
@@ -449,6 +451,7 @@
         try {
           await deleteReminder(id);
           await refreshRemindersUI();
+          await refreshCreditsUI();
         } catch (e) {
           console.error(e);
           alert("No se pudo eliminar (mira consola).");
