@@ -318,17 +318,20 @@
 
   // ---- Reminders ----
   async function listReminders() {
-    const token = getTokenFromUrl();
-    if (!token) return [];
-    const { data, error } = await sb
-      .from("reminders")
-      .select("id, phone, message, send_at, repeat, created_at")
-      .eq("token", token)
-      .order("send_at", { ascending: true });
+  const token = getTokenFromUrl();
+  if (!token) return [];
 
-    if (error) throw error;
-    return data || [];
-  }
+  const { data, error } = await sb
+    .from("reminders")
+    .select("id, phone, message, send_at, repeat, created_at, status")
+    .eq("token", token)
+    .neq("status", "cancelled")
+    .order("send_at", { ascending: true });
+
+  if (error) throw error;
+  return data || [];
+}
+
 
  async function createReminder({ phone, message, sendAt, repeat }) {
   const token = getTokenFromUrl();
