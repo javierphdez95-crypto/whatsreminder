@@ -701,15 +701,10 @@ async function refreshCreditsUI(){
     return local.toISOString();
   }
 
-  // ---- Events ----
-  document.getElementById("btn-go-app")?.addEventListener("click", () => show("app"));
-  document.getElementById("btn-buy-home")?.addEventListener("click", () => show("app"));
+  async function ensureTokenAndGoToApp() {
+  let token = getTokenFromUrl();
 
-  document.querySelectorAll("[data-buy]").forEach(btn => {
-    btn.addEventListener("click", () => startCheckout(Number(btn.getAttribute("data-buy"))));
-  });
-  document.getElementById("btn-trial")?.addEventListener("click", async () => {
-  try {
+  if (!token) {
     const res = await fetch(`${API_BASE}/api/trial`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -718,15 +713,37 @@ async function refreshCreditsUI(){
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.url) {
-      throw new Error(data?.error || "No se pudo iniciar la prueba gratis");
-    }
+  alert("No se pudo iniciar la sesión. Intenta de nuevo.");
+  return;
+}
 
-    window.location.href = data.url;
-  } catch (e) {
-    console.error(e);
-    alert("No se pudo iniciar la prueba gratis. Intenta de nuevo.");
+// extraer token de la URL que devuelve el backend
+const newUrl = new URL(data.url);
+token = newUrl.searchParams.get("token");
+
+// actualizar la URL actual sin recargar
+const url = new URL(window.location.href);
+url.searchParams.set("token", token);
+window.history.replaceState({}, "", url.toString());
+
   }
+
+  show("app");
+}
+
+
+ // ---- Events ----
+document.getElementById("btn-go-app")?.addEventListener("click", ensureTokenAndGoToApp);
+document.getElementById("btn-buy-home")?.addEventListener("click", ensureTokenAndGoToApp);
+document.getElementById("btn-trial")?.addEventListener("click", ensureTokenAndGoToApp);
+
+document.querySelectorAll("[data-buy]").forEach(btn => {
+  btn.addEventListener("click", async () => {
+    await ensureTokenAndGoToApp();
+    startCheckout(Number(btn.getAttribute("data-buy")));
+  });
 });
+
 
 
   document.getElementById("btn-add")?.addEventListener("click", async (e) => {
