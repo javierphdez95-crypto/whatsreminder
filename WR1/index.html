@@ -71,7 +71,7 @@
     <div class="brand">WhatsReminder</div>
     <div class="tabs">
       <button class="tab active" id="tab-home" onclick="show('home')">Inicio</button>
-      <button class="tab" id="tab-app" onclick="show('app')">Programar</button>
+      <button class="tab" id="tab-app" onclick="ensureTokenAndGoToApp()">Programar</button>
       <button class="tab" id="tab-help" onclick="show('help')">Ayuda</button>
     </div>
   </div>
@@ -376,6 +376,9 @@
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data?.error || "No se pudo cancelar el recordatorio.");
+  // ✅ refrescar UI tras cancelar
+  await refreshRemindersUI();
+  await refreshCreditsUI();
 }
 
 
@@ -437,7 +440,7 @@
         <div class="item">
           <div class="item-top">
             <div><strong>📅 ${when}</strong> <span class="small" style="opacity:.7">(${r.repeat || "none"})</span></div>
-            <button class="btn small" data-del="${r.id}">Eliminar</button>
+            <button class="btn small" data-del="${r.id}">Cancelar</button>
           </div>
           <div class="small" style="margin-top:6px"><b>📱</b> ${safePhone}</div>
           <div style="margin-top:6px">${safeMsg}</div>
@@ -449,7 +452,7 @@
       btn.addEventListener("click", async () => {
         const id = btn.getAttribute("data-del");
         if (!id) return;
-        if (!confirm("¿Eliminar este recordatorio?")) return;
+        if (!confirm("¿Cancelar este recordatorio?")) return;
 
         try {
           await deleteReminder(id);
@@ -457,28 +460,33 @@
           await refreshCreditsUI();
         } catch (e) {
           console.error(e);
-          alert("No se pudo eliminar (mira consola).");
+          alert("No se pudo cancelar (mira consola).");
         }
       });
     });
   }
 
   async function refreshRemindersUI() {
-    const quotaEl = document.getElementById("quota");
-    const reminders = await listReminders();
-    renderReminders(reminders);
+  const quotaEl = document.getElementById("quota");
+  const reservedEl = document.getElementById("credits-reserved"); // donde pones “Pendientes: …”
 
-    const LIMIT = 30;
-    const yyyyMm = new Date().toISOString().slice(0, 7);
+  const reminders = await listReminders();
+  lastReminders = reminders;
 
-    const usedThisMonth = reminders.filter(r => {
-      if (!r.send_at) return false;
-      const m = new Date(r.send_at).toISOString().slice(0, 7);
-      return m === yyyyMm;
-    }).length;
+  renderReminders(reminders);
 
-    if (quotaEl) quotaEl.textContent = `${usedThisMonth} / ${LIMIT} este mes`;
-  }
+  // ✅ Pendientes reales (gratis + crédito)
+  const pendingCount = reminders.filter(r => ["pending", "processing"].includes(r.status)).length;
+  if (reservedEl) reservedEl.textContent = `Pendientes: ${pendingCount}`;
+
+  // ✅ Reemplaza el “/30 este mes” por algo coherente con créditos
+  // (usa el balance que ya guardas en lastBalance en refreshCreditsUI)
+  const total = lastBalance?.credits_total ?? 0;
+  const used = lastBalance?.credits_used ?? 0;
+
+  if (quotaEl) quotaEl.textContent = `Créditos usados: ${used} / ${total}`;
+}
+
 
   // ---- Access / Credits ----
   async function validateToken(token) {
@@ -527,6 +535,8 @@
   }
 
   let lastBalance = null;
+  let lastReminders = [];
+
 
 function computeUntilDate({ credits_available, repeat, sendAtISO }) {
   if (!sendAtISO || !credits_available || credits_available <= 0) return null;
