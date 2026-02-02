@@ -470,10 +470,11 @@
   const quotaEl = document.getElementById("quota");
   const reservedEl = document.getElementById("credits-reserved"); // donde pones “Pendientes: …”
 
-  const reminders = await listReminders();
-  lastReminders = reminders;
+  const reminders = (await listReminders()).filter(r => r.status !== "sent");
+lastReminders = reminders;
 
-  renderReminders(reminders);
+renderReminders(reminders);
+
 
   // ✅ Pendientes reales (gratis + crédito)
   const pendingCount = reminders.filter(r => ["pending", "processing"].includes(r.status)).length;
