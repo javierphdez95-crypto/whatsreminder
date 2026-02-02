@@ -404,6 +404,20 @@
     return count || 0;
   }
 
+  function repeatLabel(repeat) {
+  const key = String(repeat || "none").toLowerCase();
+
+  const map = {
+    none: "Único",
+    daily: "Diario",
+    weekly: "Semanal",
+    monthly: "Mensual",
+    yearly: "Anual",
+  };
+
+  return map[key] || key;
+}
+
   // ✅ Render limpio (sin duplicados, sin returns fuera)
   function renderReminders(reminders) {
     const el = document.getElementById("list");
@@ -439,7 +453,7 @@
       return `
         <div class="item">
           <div class="item-top">
-            <div><strong>📅 ${when}</strong> <span class="small" style="opacity:.7">(${r.repeat || "none"})</span></div>
+            <div><strong>📅 ${when}</strong> <span class="small" style="opacity:.7">(${repeatLabel(r.repeat)})</span>
             <button class="btn small" data-del="${r.id}">Cancelar</button>
           </div>
           <div class="small" style="margin-top:6px"><b>📱</b> ${safePhone}</div>
@@ -629,8 +643,8 @@ async function refreshCreditsUI(){
     lastBalance = b;
 
     if (leftEl) leftEl.textContent = String(b.credits_available ?? 0);
-    if (metaEl) metaEl.textContent = `Total: ${b.credits_total} · Usados: ${b.credits_used}`;
-    if (reservedEl) reservedEl.textContent = `Pendientes: ${b.credits_reserved ?? 0}`;
+    if (metaEl) metaEl.textContent = `Total: ${b.credits_total}`;
+    // if (reservedEl) reservedEl.textContent = `Pendientes: ${b.credits_reserved ?? 0}`;
     if (freePill) freePill.textContent = b.free_available ? "1 recordatorio gratis disponible" : "Gratis usado";
 
     updateUntilMessage();
