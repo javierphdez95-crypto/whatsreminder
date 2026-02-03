@@ -53,9 +53,42 @@
       .row{grid-template-columns:1fr}
     }
     .notice{border:1px solid var(--border);border-radius:14px;padding:12px;background:#fff}
-    .list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-    .item{border:1px solid var(--border);border-radius:14px;padding:12px;background:#fff}
-    .item-top{display:flex;gap:10px;justify-content:space-between;align-items:flex-start}
+    /* Lista compacta (una fila por recordatorio) */
+.list{
+  display:flex;
+  flex-direction:column;
+  gap:0;                 /* sin “tarjetas separadas” */
+  margin-top:12px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  background:#fff;
+  overflow:hidden;
+}
+
+.item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 12px;
+  background:transparent;
+  border:0;
+  border-bottom:1px solid var(--border);
+  border-radius:0;
+}
+
+/* Quita la línea del último */
+.item:last-child{
+  border-bottom:0;
+}
+
+.item-top{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0; /* permite ellipsis */
+}
+
     .pill{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:4px 10px;font-size:12px;color:var(--muted)}
     .danger{color:#b00020}
     .footer{padding:18px 0;color:var(--muted);font-size:13px}
@@ -451,15 +484,15 @@
         : "⚠️ Sin fecha";
 
       return `
-        <div class="item">
-          <div class="item-top">
-            <div><strong>📅 ${when}</strong> <span class="small" style="opacity:.7">(${repeatLabel(r.repeat)})</span>
-            <button class="btn small" data-del="${r.id}">Cancelar</button>
-          </div>
-          <div class="small" style="margin-top:6px"><b>📱</b> ${safePhone}</div>
-          <div style="margin-top:6px">${safeMsg}</div>
-        </div>
-      `;
+  <div class="item">
+    <div class="item-top">
+      <div class="small" style="white-space:nowrap;"><strong>📅 ${when}</strong> <span style="opacity:.7">(${repeatLabel(r.repeat)})</span></div>
+      <div class="small" style="white-space:nowrap; opacity:.8;">📱 ${safePhone}</div>
+      <div style="flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${safeMsg}</div>
+    </div>
+    <button class="btn small" data-del="${r.id}">Cancelar</button>
+  </div>
+`;
     }).join("");
 
     el.querySelectorAll("[data-del]").forEach(btn => {
