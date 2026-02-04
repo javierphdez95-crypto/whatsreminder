@@ -827,15 +827,7 @@ document.querySelectorAll("[data-buy]").forEach(btn => {
       }
 
       const token = getTokenFromUrl();
-      const yyyyMm = monthKeyFromISO(sendAt);
-      const LIMIT = 30;
-
-      setStatus("Comprobando límite…");
-      const used = await countRemindersForMonth(token, yyyyMm);
-      if (used >= LIMIT) {
-        setStatus(`Has alcanzado el límite de ${LIMIT} recordatorios para ${yyyyMm}.`, true);
-        return;
-      }
+     
 
       setStatus("Guardando…");
       await createReminder({ phone, message, sendAt, repeat });
