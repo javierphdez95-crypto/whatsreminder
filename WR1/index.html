@@ -115,9 +115,10 @@
 </head>
 
 <body>
-  <div class="container">
 
-<header>
+
+<header class="site-header">
+  <div class="container">
   <div class="nav">
     <div class="brand">WhatsReminder</div>
     <div class="tabs">
@@ -126,7 +127,11 @@
       <button class="tab" id="tab-help" onclick="show('help')">Ayuda</button>
     </div>
   </div>
+  </div>
 </header>
+
+<main class="container">
+
 
 <div class="wrap">
 
@@ -938,7 +943,6 @@ document.getElementById("time")?.addEventListener("change", updateUntilMessage);
     alert(document.getElementById('privacidad').innerText);
   };
 </script>
-</div>
-
+</main>
 </body>
 </html>
