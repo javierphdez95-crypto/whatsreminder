@@ -189,7 +189,9 @@
 </section>
 
   <!-- APP -->
-  <section id="view-app" class="hide">
+<section id="view-app" class="hide">
+  <div class="container">
+
     <h2>Programar recordatorios</h2>
 
     <div class="notice" id="token-warning" style="margin-top:10px">
@@ -215,7 +217,6 @@
               <div class="pill" id="free-pill">—</div>
               <div class="small" style="margin-top:8px">1 crédito = 1 recordatorio enviado</div>
               <div id="credits-reserved" class="small" style="opacity:.8;margin-top:4px"></div>
-
             </div>
           </div>
         </div>
@@ -279,7 +280,6 @@
         </select>
         <div id="credits-until" class="small" style="opacity:.8;margin-top:6px"></div>
 
-
         <label style="margin-top:12px">
           <input type="checkbox" id="optin" />
           Confirmo que este número es mío o tengo consentimiento del destinatario para recibir recordatorios por WhatsApp. Soy responsable del uso.
@@ -302,12 +302,19 @@
 
         <div class="list" id="list"></div>
       </div>
+
     </div>
-  </section>
+
+  </div>
+</section>
+
 
   <!-- HELP -->
-  <section id="view-help" class="hide">
+<section id="view-help" class="hide">
+  <div class="container">
+
     <h2>Ayuda</h2>
+
     <div class="grid">
       <div class="card">
         <h3>¿Esto puede ser web y app?</h3>
@@ -317,6 +324,7 @@
           En Android: Menú del navegador → “Añadir a pantalla de inicio”.
         </p>
       </div>
+
       <div class="card">
         <h3>¿Cómo funciona el pago?</h3>
         <p class="small">
@@ -324,20 +332,20 @@
           Tienes 1 recordatorio gratis para probar.
         </p>
       </div>
+
       <div class="card full">
         <h3>Información importante</h3>
-<ul>
-  <li>Los créditos no caducan.</li>
-  <li>Si te quedas sin créditos, no podrás crear nuevos recordatorios hasta que recargues.</li>
-  <li>Los recordatorios que se repiten (diarios, semanales, etc.) consumen 1 crédito y se envían hasta que los canceles.</li>
-  <li>Tu enlace de acceso es personal: no lo compartas.</li>
-</ul>
-
+        <ul>
+          <li>Los créditos no caducan.</li>
+          <li>Si te quedas sin créditos, no podrás crear nuevos recordatorios hasta que recargues.</li>
+          <li>Los recordatorios que se repiten (diarios, semanales, etc.) consumen 1 crédito y se envían hasta que los canceles.</li>
+          <li>Tu enlace de acceso es personal: no lo compartas.</li>
+        </ul>
       </div>
     </div>
-  </section>
 
-</div>
+  </div>
+</section>
 
 <script>
   // === Config ===
