@@ -871,5 +871,59 @@ document.getElementById("time")?.addEventListener("change", updateUntilMessage);
     show("home");
   })();
 </script>
+<footer class="footer">
+  <p>
+    <a href="#" id="open-legal">Aviso legal</a> ·
+    <a href="#" id="open-privacidad">Privacidad</a> ·
+    <a href="mailto:contacto@mywhatsreminder.com">Contacto</a>
+  </p>
+</footer>
+<div id="legal" style="display:none;">
+  <h3>Aviso legal</h3>
+  <p>
+    WhatsReminder es una herramienta online para programar recordatorios que se envían mediante WhatsApp
+    en la fecha y hora indicadas por el usuario.
+  </p>
+  <p>
+    El usuario es el único responsable del contenido de los mensajes enviados y declara contar con el
+    consentimiento del destinatario para recibir comunicaciones por WhatsApp.
+  </p>
+  <p>
+    WhatsReminder no se hace responsable del uso indebido del servicio ni de los mensajes enviados por los usuarios.
+  </p>
+  <p>
+    Este servicio no sustituye asesoramiento profesional de ningún tipo.
+  </p>
+</div>
+
+<div id="privacidad" style="display:none;">
+  <h3>Política de privacidad</h3>
+  <p>
+    Para poder ofrecer el servicio, WhatsReminder almacena únicamente los datos necesarios para el envío
+    de recordatorios, como el número de teléfono, el mensaje y la fecha y hora de envío.
+  </p>
+  <p>
+    Los datos no se utilizan con fines publicitarios ni se ceden a terceros, salvo cuando sea estrictamente
+    necesario para el funcionamiento del servicio.
+  </p>
+  <p>
+    Los datos se conservan únicamente durante el tiempo necesario para prestar el servicio.
+  </p>
+  <p>
+    Puedes solicitar la eliminación de tus datos escribiendo a
+    <strong>contacto@mywhatsreminder.com</strong>.
+  </p>
+</div>
+<script>
+  document.getElementById('open-legal').onclick = function (e) {
+    e.preventDefault();
+    alert(document.getElementById('legal').innerText);
+  };
+
+  document.getElementById('open-privacidad').onclick = function (e) {
+    e.preventDefault();
+    alert(document.getElementById('privacidad').innerText);
+  };
+</script>
 </body>
 </html>
