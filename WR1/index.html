@@ -94,6 +94,11 @@
     .footer{padding:18px 0;color:var(--muted);font-size:13px}
     .hide{display:none !important}
     code{background:#f2f2f2;padding:2px 6px;border-radius:8px}
+    .container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="icon" href="/favicon.ico">
@@ -103,6 +108,8 @@
 </head>
 
 <body>
+  <div class="container">
+
 <header>
   <div class="nav">
     <div class="brand">WhatsReminder</div>
@@ -304,12 +311,14 @@
         </p>
       </div>
       <div class="card full">
-        <h3>Notas</h3>
-        <ul class="small">
-          <li>Los créditos no caducan.</li>
-          <li>Si te quedas sin créditos, el sistema bloquea envíos hasta que recargues.</li>
-          <li>El token es privado: no lo compartas.</li>
-        </ul>
+        <h3>Información importante</h3>
+<ul>
+  <li>Los créditos no caducan.</li>
+  <li>Si te quedas sin créditos, no podrás crear nuevos recordatorios hasta que recargues.</li>
+  <li>Los recordatorios que se repiten (diarios, semanales, etc.) consumen 1 crédito y se envían hasta que los canceles.</li>
+  <li>Tu enlace de acceso es personal: no lo compartas.</li>
+</ul>
+
       </div>
     </div>
   </section>
@@ -922,5 +931,7 @@ document.getElementById("time")?.addEventListener("change", updateUntilMessage);
     alert(document.getElementById('privacidad').innerText);
   };
 </script>
+</div>
+
 </body>
 </html>
