@@ -130,7 +130,7 @@
         <button class="tab active" id="tab-home" onclick="show('home')">Inicio</button>
         <button class="tab" id="tab-app" onclick="ensureTokenAndGoToApp()">Programar</button>
         <button class="tab" id="tab-help" onclick="show('help')">Ayuda</button>
-        <button class="tab" onclick="shareSite()">Compartir</button>
+        <button class="tab" id="btn-share">Compartir</button>
       </div>
     </div>
   </div>
@@ -808,20 +808,6 @@ async function refreshCreditsUI(){
   alert("No se pudo iniciar la sesión. Intenta de nuevo.");
   return;
 }
-function shareSite() {
-  const url = window.location.origin;
-
-  if (navigator.share) {
-    navigator.share({
-      title: 'WhatsReminder',
-      text: 'Escribe un recordatorio y recíbelo por WhatsApp',
-      url: url
-    });
-  } else {
-    navigator.clipboard.writeText(url);
-    alert('Enlace copiado: ' + url);
-  }
-}
 
 
 // extraer token de la URL que devuelve el backend
@@ -838,11 +824,30 @@ window.history.replaceState({}, "", url.toString());
   show("app");
 }
 
+function shareSite() {
+  const url = window.location.origin;
+
+  if (navigator.share) {
+    navigator.share({
+      title: "WhatsReminder",
+      text: "Escribe un recordatorio y recíbelo por WhatsApp",
+      url
+    }).catch(() => {});
+  } else {
+    try {
+      navigator.clipboard.writeText(url);
+      alert("Enlace copiado: " + url);
+    } catch (e) {
+      alert("Copia este enlace: " + url);
+    }
+  }
+}
 
  // ---- Events ----
 document.getElementById("btn-go-app")?.addEventListener("click", ensureTokenAndGoToApp);
 document.getElementById("btn-buy-home")?.addEventListener("click", ensureTokenAndGoToApp);
 document.getElementById("btn-trial")?.addEventListener("click", ensureTokenAndGoToApp);
+document.getElementById("btn-share")?.addEventListener("click", shareSite);
 
 document.querySelectorAll("[data-buy]").forEach(btn => {
   btn.addEventListener("click", async () => {
