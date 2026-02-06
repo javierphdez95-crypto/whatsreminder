@@ -119,10 +119,9 @@
 </head>
 
 <body>
+<div class="wrap">
 
-
-<header class="site-header">
-  <div class="container">
+<header>
   <div class="nav">
     <div class="brand">WhatsReminder</div>
     <div class="tabs">
@@ -131,18 +130,15 @@
       <button class="tab" id="tab-help" onclick="show('help')">Ayuda</button>
     </div>
   </div>
-  </div>
 </header>
 
 <main>
-
-
-<div class="wrap">
 
   <!-- HOME -->
   <section id="view-home">
     <div class="hero">
       <span class="badge">100% online · Funciona en móvil · Te avisa por WhatsApp</span>
+      <div class="pill" style="margin-bottom:12px;">mywhatsreminder.com</div>
       <h1>Escribe un recordatorio y recíbelo por WhatsApp</h1>
       <p class="subtitle">Escríbelo una vez y te llegará justo cuando lo necesites.</p>
 
@@ -948,5 +944,6 @@ document.getElementById("time")?.addEventListener("change", updateUntilMessage);
   };
 </script>
 </main>
+</div>
 </body>
 </html>
