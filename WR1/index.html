@@ -722,7 +722,7 @@ async function refreshCreditsUI(){
     if (leftEl) leftEl.textContent = String(b.credits_available ?? 0);
     if (metaEl) metaEl.textContent = `Total: ${b.credits_total}`;
     // if (reservedEl) reservedEl.textContent = `Pendientes: ${b.credits_reserved ?? 0}`;
-    if (freePill) freePill.textContent = b.free_available ? "1 recordatorio gratis disponible" : "Gratis usado";
+    if (freePill) freePill.textContent = b.free_available ? "🎁 Tienes 1 recordatorio GRATIS" : "Gratis usado";
 
     updateUntilMessage();
   } catch (e) {
