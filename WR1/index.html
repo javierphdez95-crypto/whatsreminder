@@ -131,9 +131,12 @@
 }
 .kpi-clickable {
   border: none;
-  width: 100%;
+  width: auto;          /* ✅ antes era 100% */
   text-align: left;
   cursor: pointer;
+  background: transparent;
+  padding: 0;           /* ✅ evita “padding de botón” por defecto */
+  font: inherit;        /* ✅ hereda la fuente, para que no cambie */
 }
 
 .kpi-clickable:hover {
