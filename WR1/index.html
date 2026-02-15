@@ -301,7 +301,7 @@
       <!-- Créditos -->
       <div class="card">
         <h3>Créditos</h3>
-
+        <div id="credits-normal">
         <div class="notice">
           <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
             <div>
@@ -316,6 +316,11 @@
             </div>
           </div>
         </div>
+      </div>
+      <div id="credits-free" class="notice hidden" style="margin-top:12px">
+        🎁 <strong>Tienes 1 recordatorio GRATIS</strong>
+        <div class="small">Úsalo ahora, no necesitas comprar.</div>
+      </div>
 
         <div class="cta" style="margin-top:12px">
           <button class="btn primary" data-buy="10">Comprar 10 · 1,49€</button>
@@ -831,17 +836,30 @@ async function refreshCreditsUI(){
     if (freePill) freePill.textContent = b.free_available ? "🎁 Tienes 1 recordatorio GRATIS" : "Gratis usado";
 
     updateUntilMessage();
-    // --- Onboarding (mostrar solo cuando toca) ---
-    const onboarding = document.getElementById("onboarding");
-    if (onboarding) {
-      const hasFree = b.free_available === true;
-      const hasCredits = Number(b.credits_available || 0) > 0;
-      if (hasFree && !hasCredits) {
-        onboarding.classList.remove("hidden");
-      } else {
-        onboarding.classList.add("hidden");
+   // --- Onboarding (mostrar solo cuando toca) ---
+   const onboarding = document.getElementById("onboarding");
+   if (onboarding) {
+    const hasFree = b.free_available === true;
+    const hasCredits = Number(b.credits_available || 0) > 0;
+    if (hasFree && !hasCredits) {
+      onboarding.classList.remove("hidden");
+    } else {
+      onboarding.classList.add("hidden");
+    }
   }
-}
+  // --- UI Créditos: ocultar bloque cuando es primer uso ---
+  const creditsCard = document.getElementById("credits-card");
+  if (creditsCard) {
+    const hasFree = b.free_available === true;
+    const hasCredits = Number(b.credits_available || 0) > 0;
+    // Caso bonito: primer recordatorio gratis
+    if (hasFree && !hasCredits) {
+      creditsCard.classList.add("hide");
+    } else {
+      creditsCard.classList.remove("hide");
+    }
+  }
+
 
   } catch (e) {
     console.error(e);
