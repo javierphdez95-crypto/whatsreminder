@@ -142,6 +142,63 @@
 .kpi-clickable:hover {
   filter: brightness(0.98);
 }
+/* Onboarding primer recordatorio */
+.onboarding{
+  border: 1px solid #e9e9e9;
+  border-radius: 16px;
+  padding: 18px;
+  margin-top: 14px;
+  margin-bottom: 16px;
+  background: #fff;
+}
+
+.onb-title{
+  font-weight: 800;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.onb-sub{
+  color: #444;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.onb-steps{
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.onb-step{
+  border: 1px solid #efefef;
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.onb-num{
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  border: 2px solid #000;
+}
+
+.onb-txt{
+  font-weight: 600;
+}
+
+.onb-actions{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -293,6 +350,32 @@
 
       <!-- Nuevo recordatorio -->
       <div class="card">
+        <!-- ONBOARDING: solo primer recordatorio -->
+<div id="onboarding-first" class="onboarding" style="display:none;">
+  <div class="onb-title">🎁 Primer recordatorio GRATIS</div>
+  <div class="onb-sub">En 15 segundos lo tienes programado.</div>
+
+  <div class="onb-steps">
+    <div class="onb-step">
+      <div class="onb-num">1</div>
+      <div class="onb-txt">Escribe el mensaje</div>
+    </div>
+    <div class="onb-step">
+      <div class="onb-num">2</div>
+      <div class="onb-txt">Elige fecha y hora</div>
+    </div>
+    <div class="onb-step">
+      <div class="onb-num">3</div>
+      <div class="onb-txt">Recíbelo por WhatsApp</div>
+    </div>
+  </div>
+
+  <div class="onb-actions">
+    <button id="btn-fill-example" class="btn primary">✨ Rellenar ejemplo Gratis</button>
+    <button id="btn-dismiss-onb" class="btn">Ahora no</button>
+  </div>
+</div>
+
         <h3>Nuevo recordatorio</h3>
 
         <label for="msg">Mensaje</label>
@@ -748,6 +831,18 @@ async function refreshCreditsUI(){
     if (freePill) freePill.textContent = b.free_available ? "🎁 Tienes 1 recordatorio GRATIS" : "Gratis usado";
 
     updateUntilMessage();
+    // --- Onboarding (mostrar solo cuando toca) ---
+    const onboarding = document.getElementById("onboarding");
+    if (onboarding) {
+      const hasFree = b.free_available === true;
+      const hasCredits = Number(b.credits_available || 0) > 0;
+      if (hasFree && !hasCredits) {
+        onboarding.classList.remove("hidden");
+      } else {
+        onboarding.classList.add("hidden");
+  }
+}
+
   } catch (e) {
     console.error(e);
     setBuyStatus("No puedo leer balance.", true);
@@ -874,6 +969,37 @@ function shareSite() {
       alert("Copia este enlace: " + url);
     }
   }
+}
+function shouldShowFirstOnboarding(balance) {
+  // balance.free_available viene del /api/balance
+  // Lo mostramos si hay 1 gratis disponible y aún no lo ha ocultado el usuario
+  const dismissed = localStorage.getItem("wr_onb_dismissed") === "1";
+  return !!balance?.free_available && !dismissed;
+}
+
+function showFirstOnboarding(show) {
+  const el = document.getElementById("onboarding-first");
+  if (el) el.style.display = show ? "block" : "none";
+}
+
+function setExampleReminder() {
+  // 👇 AJUSTA estos IDs a tus inputs reales (te digo cómo encontrarlos abajo)
+  const msgEl = document.getElementById("rem-message");
+  const dtEl  = document.getElementById("rem-datetime");
+
+  if (msgEl) msgEl.value = "Recuérdame beber agua 💧";
+  if (dtEl) {
+    // Pone hora + 2 horas en el timezone del navegador (suficiente para ejemplo)
+    const d = new Date(Date.now() + 2 * 60 * 60 * 1000);
+    // si tu input es type="datetime-local"
+    const pad = (n) => String(n).padStart(2, "0");
+    const local = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    dtEl.value = local;
+  }
+
+  // opcional: hace scroll al formulario para que lo vea
+  const form = document.getElementById("new-reminder-card");
+  if (form) form.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
  // ---- Events ----
