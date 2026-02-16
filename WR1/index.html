@@ -240,13 +240,13 @@
       <div class="kpis">
         <div class="kpi"><strong>Sin registro</strong><div class="small">acceso por enlace</div></div>
         <button class="kpi kpi-free kpi-clickable" id="kpi-free" type="button"><strong>🎁 Primer recordatorio GRATIS</strong><div class="small">Pruébalo ahora mismo</div></button>
-        <div class="kpi"><strong>Packs</strong><div class="small">10 / 25 / 50 créditos</div></div>
+        <div class="kpi"><strong>Packs</strong><div class="small">10 / 25 / 50 Recordatorios</div></div>
       </div>
 
       <div class="cta">
         <button class="btn primary" id="btn-trial">Probar gratis</button>
         <button class="btn secondary" id="btn-go-app">Programar un recordatorio</button>
-        <button class="btn" id="btn-buy-home">Comprar créditos</button>
+        <button class="btn" id="btn-buy-home">Comprar recordatorios</button>
       </div>
 
     </div>  <!-- cierra .hero -->
@@ -300,7 +300,7 @@
 
       <!-- Créditos -->
       <div class="card">
-        <h3>Créditos</h3>
+        <h3>Recordatorios</h3>
         <div id="credits-normal">
         <div class="notice">
           <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
@@ -323,9 +323,9 @@
       </div>
 
         <div class="cta" style="margin-top:12px">
-          <button class="btn primary" data-buy="10">Comprar 10 · 1,49€</button>
-          <button class="btn" data-buy="25">Comprar 25 · 2,99€</button>
-          <button class="btn" data-buy="50">Comprar 50 · 4,99€</button>
+          <button class="btn primary" data-buy="10">Añadir 10 · 1,49€</button>
+          <button class="btn" data-buy="25">Añadir 25 · 2,99€</button>
+          <button class="btn" data-buy="50">Añadir 50 · 4,99€</button>
         </div>
 
         <div class="small" style="margin-top:10px" id="buy-status"></div>
@@ -455,7 +455,7 @@
       <div class="card">
         <h3>¿Cómo funciona el pago?</h3>
         <p class="small">
-          Pagas por créditos. Cada recordatorio enviado consume 1 crédito.
+          Pagas por recordatorio. Cada mensaje enviado consume 1 recordatorio.
           Tienes 1 recordatorio gratis para probar.
         </p>
       </div>
@@ -463,9 +463,9 @@
       <div class="card full">
         <h3>Información importante</h3>
         <ul class="small help-list">
-  <li>Los créditos no caducan.</li>
-  <li>Si te quedas sin créditos, no podrás crear nuevos recordatorios hasta que recargues.</li>
-  <li>Los recordatorios que se repiten (diarios, semanales, etc.) consumen 1 crédito y se envían hasta que los canceles.</li>
+  <li>Los recordatorios no caducan.</li>
+  <li>Si te quedas sin recordatorios disponibles, no podrás crear nuevos recordatorios hasta que recargues.</li>
+  <li>Los recordatorios que se repiten (diarios, semanales, etc.) consumen 1 recordatorio por cada repeticion y se envían hasta que los consumas.</li>
   <li>Tu enlace de acceso es personal: no lo compartas.</li>
 </ul>
       </div>
@@ -482,10 +482,50 @@
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  function getTokenFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("token");
+  // --- Token persistence (MVP) ---
+const TOKEN_KEY = "wr_token";
+
+function getTokenFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const t = (params.get("token") || "").trim();
+  return t || null;
+}
+
+function saveToken(token) {
+  if (token) localStorage.setItem(TOKEN_KEY, token);
+}
+
+function getSavedToken() {
+  const t = (localStorage.getItem(TOKEN_KEY) || "").trim();
+  return t || null;
+}
+
+function setUrlToken(token) {
+  const url = new URL(window.location.href);
+  url.searchParams.set("token", token);
+  window.history.replaceState({}, "", url.toString()); // no recarga
+}
+
+function ensureTokenInSession() {
+  // 1) Si viene token en la URL, ese manda
+  const urlToken = getTokenFromUrl?.() || new URLSearchParams(location.search).get("token");
+  if (urlToken) {
+    localStorage.setItem("wr_token", urlToken);
+    if (typeof setTokenInSession === "function") setTokenInSession(urlToken);
+    return urlToken;
   }
+
+  // 2) Si no viene en URL, usamos el guardado
+  const saved = localStorage.getItem("wr_token");
+  if (saved) {
+    if (typeof setTokenInSession === "function") setTokenInSession(saved);
+    return saved;
+  }
+
+  // 3) No hay token
+  return null;
+}
+
 
   function setActiveTab(view){
     const map = { home: "tab-home", app: "tab-app", help: "tab-help" };
@@ -506,7 +546,7 @@
 
   // ---- Reminders ----
   async function listReminders() {
-  const token = getTokenFromUrl();
+  const token = ensureTokenInSession();
   if (!token) return [];
 
   const { data, error } = await sb
@@ -522,7 +562,7 @@
 
 
  async function createReminder({ phone, message, sendAt, repeat }) {
-  const token = getTokenFromUrl();
+  const token = ensureTokenInSession();
   if (!token) throw new Error("No token");
 
   const res = await fetch(`${API_BASE}/api/create-reminder`, {
@@ -543,7 +583,7 @@
     // Mensaje claro para usuario
     const msg =
   data?.error === "No credits available"
-    ? "Para continuar, adquiere un pack de créditos."
+    ? "Para continuar, adquiere un pack de recordatorios."
     : (data?.error || "No se pudo guardar el recordatorio.");
     throw new Error(msg);
   }
@@ -553,7 +593,7 @@
 
 
   async function deleteReminder(id) {
-  const token = getTokenFromUrl();
+  const token = ensureTokenInSession();
   if (!token) throw new Error("No token");
 
   const res = await fetch(`${API_BASE}/api/cancel-reminder`, {
@@ -799,18 +839,18 @@ function updateUntilMessage() {
   if (repeat === "none") { el.textContent = ""; return; }
 
   if (avail <= 0) {
-    el.textContent = "No tienes créditos disponibles para recordatorios recurrentes.";
+    el.textContent = "No tienes recordatorios disponibles para recordatorios recurrentes.";
     return;
   }
 
   const until = computeUntilDate({ credits_available: avail, repeat, sendAtISO: sendAt });
   if (!until) { el.textContent = ""; return; }
 
-  el.textContent = `Con tus créditos actuales, este recordatorio se enviará aprox. hasta el ${until}.`;
+  el.textContent = `Con tus recordatorios disponibles actuales, este recordatorio se enviará aprox. hasta el ${until}.`;
 }
 
 async function refreshCreditsUI(){
-  const token = getTokenFromUrl();
+  const token = ensureTokenInSession();
   const leftEl = document.getElementById("credits-left");
   const metaEl = document.getElementById("credits-meta");
   const freePill = document.getElementById("free-pill");
@@ -869,7 +909,7 @@ async function refreshCreditsUI(){
 
 
   async function startCheckout(pack){
-    const token = getTokenFromUrl();
+    const token = ensureTokenInSession();
     if (!token) {
       alert("Falta el token. Abre la página con ?token=TU_TOKEN");
       return;
@@ -901,7 +941,7 @@ async function refreshCreditsUI(){
   }
 
   async function checkAccessAndShow(){
-    const token = getTokenFromUrl();
+    const token = ensureTokenInSession();
     const warn = document.getElementById("token-warning");
     const grid = document.getElementById("app-grid");
 
@@ -940,8 +980,17 @@ async function refreshCreditsUI(){
   }
 
   async function ensureTokenAndGoToApp() {
-  let token = getTokenFromUrl();
+  let token = ensureTokenInSession();
 
+  // ✅ Si no hay token en sesión, prueba a recuperarlo de localStorage
+  if (!token) {
+    token = localStorage.getItem("wr_token");
+    if (token) {
+      setTokenInSession(token); // si existe en tu archivo
+    }
+  }
+
+  // ✅ Si sigue sin token, crea uno nuevo
   if (!token) {
     const res = await fetch(`${API_BASE}/api/trial`, {
       method: "POST",
@@ -951,9 +1000,35 @@ async function refreshCreditsUI(){
 
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.url) {
-  alert("No se pudo iniciar la sesión. Intenta de nuevo.");
-  return;
+      alert("No se pudo iniciar la sesión. Intenta de nuevo.");
+      return;
+    }
+
+    // ✅ Extraer el token de la URL y guardarlo para futuras aperturas
+    const url = new URL(data.url);
+    token = url.searchParams.get("token");
+
+    if (!token) {
+      alert("Token inválido.");
+      return;
+    }
+
+    localStorage.setItem("wr_token", token);
+    setTokenInSession(token);
+  }
+
+  // ✅ (Opcional pero recomendado) Limpia la URL para que el acceso directo no dependa del ?token=
+  try {
+    const u = new URL(window.location.href);
+    u.searchParams.delete("token");
+    window.history.replaceState({}, "", u.toString());
+  } catch {}
+
+  // ✅ Ir a la pantalla de Programar
+  show("app");
 }
+
+
 
 
 // extraer token de la URL que devuelve el backend
@@ -965,10 +1040,10 @@ const url = new URL(window.location.href);
 url.searchParams.set("token", token);
 window.history.replaceState({}, "", url.toString());
 
-  }
+  
 
   show("app");
-}
+
 
 function shareSite() {
   const url = window.location.origin;
@@ -1058,7 +1133,7 @@ document.querySelectorAll("[data-buy]").forEach(btn => {
         return setStatus("Pon una fecha/hora al menos 30 segundos en el futuro.", true);
       }
 
-      const token = getTokenFromUrl();
+      const token = ensureTokenInSession();
      
 
       setStatus("Guardando…");
@@ -1091,7 +1166,7 @@ document.getElementById("time")?.addEventListener("change", updateUntilMessage);
   // ---- Init ----
   (function init(){
   
-    const token = getTokenFromUrl();
+    const token = ensureTokenInSession();
     const hint = document.getElementById("home-token-hint");
     if (hint) {
       hint.innerHTML = token
