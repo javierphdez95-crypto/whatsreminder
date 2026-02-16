@@ -507,23 +507,33 @@ function setUrlToken(token) {
 }
 
 function ensureTokenInSession() {
-  // 1) Si viene token en la URL, ese manda
-  const urlToken = getTokenFromUrl?.() || new URLSearchParams(location.search).get("token");
+  // 1) Si viene token en la URL, lo usamos y lo guardamos
+  const params = new URLSearchParams(window.location.search);
+  const urlToken = params.get("token");
   if (urlToken) {
+    sessionStorage.setItem("wr_token", urlToken);
     localStorage.setItem("wr_token", urlToken);
-    if (typeof setTokenInSession === "function") setTokenInSession(urlToken);
     return urlToken;
   }
 
-  // 2) Si no viene en URL, usamos el guardado
-  const saved = localStorage.getItem("wr_token");
-  if (saved) {
-    if (typeof setTokenInSession === "function") setTokenInSession(saved);
-    return saved;
+  // 2) Si no viene en URL, intentamos sesión/localStorage
+  const s = sessionStorage.getItem("wr_token");
+  if (s) return s;
+
+  const l = localStorage.getItem("wr_token");
+  if (l) {
+    sessionStorage.setItem("wr_token", l);
+    return l;
   }
 
-  // 3) No hay token
   return null;
+}
+
+function setUrlToken(token) {
+  const url = new URL(window.location.href);
+  url.searchParams.set("token", token);
+  // Importante: no recarga la página
+  window.history.replaceState({}, "", url.toString());
 }
 
 
@@ -979,18 +989,11 @@ async function refreshCreditsUI(){
     return local.toISOString();
   }
 
-  async function ensureTokenAndGoToApp() {
+  
+async function ensureTokenAndGoToApp() {
   let token = ensureTokenInSession();
 
-  // ✅ Si no hay token en sesión, prueba a recuperarlo de localStorage
-  if (!token) {
-    token = localStorage.getItem("wr_token");
-    if (token) {
-      setTokenInSession(token); // si existe en tu archivo
-    }
-  }
-
-  // ✅ Si sigue sin token, crea uno nuevo
+  // Si no hay token, creamos uno de trial
   if (!token) {
     const res = await fetch(`${API_BASE}/api/trial`, {
       method: "POST",
@@ -999,32 +1002,30 @@ async function refreshCreditsUI(){
     });
 
     const data = await res.json().catch(() => ({}));
+
     if (!res.ok || !data.url) {
       alert("No se pudo iniciar la sesión. Intenta de nuevo.");
       return;
     }
 
-    // ✅ Extraer el token de la URL y guardarlo para futuras aperturas
-    const url = new URL(data.url);
-    token = url.searchParams.get("token");
+    // data.url trae un link tipo https://.../?token=wr_xxx
+    const u = new URL(data.url);
+    token = u.searchParams.get("token");
 
     if (!token) {
       alert("Token inválido.");
       return;
     }
 
+    // Guardar token para futuras aperturas
+    sessionStorage.setItem("wr_token", token);
     localStorage.setItem("wr_token", token);
-    setTokenInSession(token);
+
+    // Ponerlo también en la URL actual (sin recargar)
+    setUrlToken(token);
   }
 
-  // ✅ (Opcional pero recomendado) Limpia la URL para que el acceso directo no dependa del ?token=
-  try {
-    const u = new URL(window.location.href);
-    u.searchParams.delete("token");
-    window.history.replaceState({}, "", u.toString());
-  } catch {}
-
-  // ✅ Ir a la pantalla de Programar
+  // ✅ Navegar a la pantalla de programar
   show("app");
 }
 
