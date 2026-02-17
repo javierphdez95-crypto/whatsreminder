@@ -589,17 +589,28 @@ function setUrlToken(token) {
   });
 
   const data = await res.json().catch(() => ({}));
+
   if (!res.ok) {
-    // Mensaje claro para usuario
+    // ✅ mantener UI coherente (si el backend detecta que el trial no aplica)
+    if (data?.error === "No credits available") {
+      await refreshCreditsUI();
+    }
+
     const msg =
-  data?.error === "No credits available"
-    ? "Para continuar, adquiere un pack de recordatorios."
-    : (data?.error || "No se pudo guardar el recordatorio.");
+      data?.error === "No credits available"
+        ? "Para continuar, adquiere un pack de recordatorios."
+        : (data?.error || "No se pudo guardar el recordatorio.");
     throw new Error(msg);
   }
 
-  return data.reminder;
+  // ✅ refrescar UI tras crear (si era gratis, debe desaparecer)
+  await refreshCreditsUI();
+  await refreshRemindersUI();
+
+  // ✅ devolver el reminder creado (API devuelve reminders[])
+  return (data.reminders && data.reminders[0]) ? data.reminders[0] : data;
 }
+
 
 
   async function deleteReminder(id) {
