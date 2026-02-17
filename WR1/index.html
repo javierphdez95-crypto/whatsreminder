@@ -993,7 +993,15 @@ async function refreshCreditsUI(){
 async function ensureTokenAndGoToApp() {
   let token = ensureTokenInSession();
 
-  // Si no hay token, creamos uno de trial
+  // 1️⃣ Si no hay token en sesión, mira en localStorage
+  if (!token) {
+    token = localStorage.getItem("wr_token");
+    if (token) {
+      setTokenInSession(token);
+    }
+  }
+
+  // 2️⃣ Si sigue sin haber token, pedir uno nuevo
   if (!token) {
     const res = await fetch(`${API_BASE}/api/trial`, {
       method: "POST",
@@ -1008,24 +1016,21 @@ async function ensureTokenAndGoToApp() {
       return;
     }
 
-    // data.url trae un link tipo https://.../?token=wr_xxx
-    const u = new URL(data.url);
-    token = u.searchParams.get("token");
+    // 3️⃣ Extraer token de la URL
+    const url = new URL(data.url);
+    token = url.searchParams.get("token");
 
     if (!token) {
       alert("Token inválido.");
       return;
     }
 
-    // Guardar token para futuras aperturas
-    sessionStorage.setItem("wr_token", token);
+    // 4️⃣ Guardar token para siempre
     localStorage.setItem("wr_token", token);
-
-    // Ponerlo también en la URL actual (sin recargar)
-    setUrlToken(token);
+    setTokenInSession(token);
   }
 
-  // ✅ Navegar a la pantalla de programar
+  // 5️⃣ Ir a la app
   show("app");
 }
 
