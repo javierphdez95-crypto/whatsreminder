@@ -1035,22 +1035,6 @@ async function ensureTokenAndGoToApp() {
 }
 
 
-
-
-// extraer token de la URL que devuelve el backend
-const newUrl = new URL(data.url);
-token = newUrl.searchParams.get("token");
-
-// actualizar la URL actual sin recargar
-const url = new URL(window.location.href);
-url.searchParams.set("token", token);
-window.history.replaceState({}, "", url.toString());
-
-  
-
-  show("app");
-
-
 function shareSite() {
   const url = window.location.origin;
 
