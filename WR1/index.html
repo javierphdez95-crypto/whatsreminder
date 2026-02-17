@@ -500,11 +500,6 @@ function getSavedToken() {
   return t || null;
 }
 
-function setUrlToken(token) {
-  const url = new URL(window.location.href);
-  url.searchParams.set("token", token);
-  window.history.replaceState({}, "", url.toString()); // no recarga
-}
 
 function ensureTokenInSession() {
   // 1) Si viene token en la URL, lo usamos y lo guardamos
@@ -528,13 +523,21 @@ function ensureTokenInSession() {
 
   return null;
 }
-
 function setUrlToken(token) {
   const url = new URL(window.location.href);
   url.searchParams.set("token", token);
-  // Importante: no recarga la página
+  // no recarga
   window.history.replaceState({}, "", url.toString());
 }
+
+function setTokenInSession(token) {
+  if (!token) return;
+  token = String(token).trim();
+  sessionStorage.setItem("wr_token", token);
+  localStorage.setItem("wr_token", token);
+  setUrlToken(token);
+}
+
 
 
   function setActiveTab(view){
@@ -1004,15 +1007,7 @@ async function refreshCreditsUI(){
 async function ensureTokenAndGoToApp() {
   let token = ensureTokenInSession();
 
-  // 1️⃣ Si no hay token en sesión, mira en localStorage
-  if (!token) {
-    token = localStorage.getItem("wr_token");
-    if (token) {
-      setTokenInSession(token);
-    }
-  }
-
-  // 2️⃣ Si sigue sin haber token, pedir uno nuevo
+  // 1️⃣ Si no hay token, crear uno nuevo
   if (!token) {
     const res = await fetch(`${API_BASE}/api/trial`, {
       method: "POST",
@@ -1021,13 +1016,11 @@ async function ensureTokenAndGoToApp() {
     });
 
     const data = await res.json().catch(() => ({}));
-
     if (!res.ok || !data.url) {
       alert("No se pudo iniciar la sesión. Intenta de nuevo.");
       return;
     }
 
-    // 3️⃣ Extraer token de la URL
     const url = new URL(data.url);
     token = url.searchParams.get("token");
 
@@ -1036,14 +1029,16 @@ async function ensureTokenAndGoToApp() {
       return;
     }
 
-    // 4️⃣ Guardar token para siempre
+    // 2️⃣ Guardar token para siempre
     localStorage.setItem("wr_token", token);
-    setTokenInSession(token);
+    sessionStorage.setItem("wr_token", token);
+    setUrlToken(token);
   }
 
-  // 5️⃣ Ir a la app
+  // 3️⃣ Ir a programar
   show("app");
 }
+
 
 
 function shareSite() {
