@@ -923,7 +923,15 @@ async function refreshCreditsUI(){
       creditsCard.classList.remove("hide");
     }
   }
-
+    // --- Banner GRATIS grande (id="credits-free") ---
+    const freeBanner = document.getElementById("credits-free");
+    if (freeBanner) {
+      if (b.free_available === true) {
+        freeBanner.classList.remove("hidden");
+      } else {
+        freeBanner.classList.add("hidden");
+      }
+    }
 
   } catch (e) {
     console.error(e);
